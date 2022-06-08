@@ -10,6 +10,8 @@ from django.http.response import Http404, JsonResponse
 # Create your views here.
 #def index(request):
 #    return redirect('/agenda/')
+def menu_principal(request):
+    return render(request, 'menu-principal.html')
 
 def login_user(request):
     return render(request, 'login.html')
@@ -41,6 +43,16 @@ def lista_eventos(request):
                                    data_evento__gt=data_atual)
     dados = {'eventos':evento}
     return render(request, 'agenda.html', dados)
+
+@login_required(login_url='/login/')
+def historico(request):
+    usuario = request.user
+    data_atual = datetime.now()
+    evento = Evento.objects.filter(usuario=usuario,
+                                   data_evento__lt=data_atual)
+    dados = {'eventos':evento}
+    return render(request, 'historico.html', dados)
+
 
 @login_required(login_url='/login/')
 def evento(request):
@@ -78,7 +90,7 @@ def submit_evento(request):
                                   data_evento=data_evento,
                                   local_evento=local_evento,
                                   usuario=usuario)
-    return redirect('/')
+    return redirect('/agenda/')
 
 @login_required(login_url='/login/')
 def delete_evento(request, id_evento):
@@ -91,7 +103,7 @@ def delete_evento(request, id_evento):
         evento.delete()
     else:
         raise Http404()
-    return redirect('/')
+    return redirect('/agenda/')
 
 def json_lista_evento(request, id_usuario):
     usuario = User.objects.get(id=id_usuario)
